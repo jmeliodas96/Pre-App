@@ -1,6 +1,7 @@
-# Main content, this call to other script for execute task
-# by Jimmy Mena
 #!/usr/bin/python
+# by Jimmy Mena
+
+# dependences
 import subprocess
 import sched
 import datetime
@@ -8,17 +9,18 @@ import time
 import os
 import re
 
+# get current date
 scheduler = sched.scheduler(time.time, time.sleep)
 
 # credentials
-
 USER            =   ''
 HOST            =   ''
 PASSWORD        =   ''
 
 # case password -> constant
-# python create_one.py --algo helper --algo2 ubuntu --algo3 WORKING_DIRECTORY_6_0_N5 >> mylog.txt 2>&1
 sshpass     = 'sshpass -p '
+
+# parameters for build commands
 log         = ' >> mylog.txt 2>&1'
 command0    = ' python create_one.py --algo '
 command8    = ' --algo2 '
@@ -47,17 +49,37 @@ SPACE               =   ' '
 WORKING             =   ''
 # WORKING_DIRECTORY_6_0_1_N5
 
-
-
 # name of new directorys to create
 DIR1    = ''
 DIR2    = ''
-AMOUNT_DIRECTORYS= 0
-
 
 """
     start functions
 """
+
+# if user use password
+def ask_password():
+    print '\n'
+    print '     -To preload the apks we need to create news directories in the following location : /packages/apps/ directory.'
+
+    # asking for parameters to connect server user
+    print '\n'
+    print '         Insert your Credentials for connect to server and preload files : '
+    USER            =   raw_input('         Insert UserName   : ')
+    HOST            =   raw_input('         Insert Host       : ')
+    PASSWORD        =   raw_input('         Insert Password   : ')
+
+    # build a command
+    command1 = sshpass + PASSWORD + ssh + USER + charact + HOST + command5
+
+    # execute instruction
+    try:
+        # os.system(command1)
+        message = '        -The directories were created successfully.'
+        return message
+
+    except Exception as e:
+        return e
 
 # get current working directorie
 def getcwd():
@@ -138,6 +160,7 @@ def mk_list():
 
 # apk_list function get all files .mk
 def apk_list():
+    # get list of files from function get_list_files()
     content = get_list_files()
     apk     = []
     apk_re  = re.compile('.[a]+[p]+[k].*')
@@ -152,6 +175,7 @@ def apk_list():
     return apk
 
 
+"""Try this baby :)"""
 try:
 
     # start and welcome to user
@@ -162,157 +186,119 @@ try:
     print '                 Before starting , make sure you have the APKs are required for installation.'
     print '\n'
 
-    response = raw_input("      What type of Authentication do you go to use, write 'p' for password or 'k' for key.pem file : ")
+    response = raw_input("           What type of Authentication do you go to use, write Password or Key [P/K]: ")
 
-    if(response == 'p'):
+    if(response == 'p' or response == 'P'):
+        # call to function ask_password()
+        pwd_response = ask_password()
+        print pwd_response
 
-        print '\n'
-        # response1     =   raw_input("      Do you need to upload a file, write 'yes' for upload or 'not' for not upload files : ")
-        print '     -To preload the apks we need to create news directories in the following location : /packages/apps/ directory.'
-        print '     -with names that serve as reference to the files apks.'
-
-        # #
-        # # convert to int
-        # AMOUNT_DIRECTORYS   =   int(raw_input('     -How many directories do you need to create : '))
-        #
-        # if(AMOUNT_DIRECTORYS <= 0):
-        #     print "Do not to create news directories."
-        #
-        # elif(AMOUNT_DIRECTORYS > 0 and AMOUNT_DIRECTORYS < 2):
-        #     print 'Create one directories.'
-        #
-        # elif(AMOUNT_DIRECTORYS > 1):
-        #     print '     -Create two directories.'
-        #
-        #     # asking for parameters to connect server user ODM
-        #     print '\n'
-        #     print '         Insert your Credentials for connect to server and preload files : '
-        #     USER            =   raw_input('         Insert UserName   : ')
-        #     HOST            =   raw_input('         Insert Host       : ')
-        #     PASSWORD        =   raw_input('         Insert Password   : ')
-        #
-        #     # build a command
-        #     command1 = sshpass + PASSWORD + ssh + USER + charact + HOST + command5
-        #     print '\n'
-        #     # print '         : ',command1
-        #     # execute instruction
-        #     os.system(command1)
-        #     print '        -The directories were created successfully.'
-        #
-        #     # importing second Script
-        #     # import test_a
-        # /WORKING_DIRECTORY_6_0_N5/packages/apps
-    elif(response == 'k'):
-
-        print '\n'
+    elif(response == 'k' or response == 'K'):
         print '     -To preload the apks we need to create news directory in the following location : /packages/apps/ directory.'
-        print '     -with names that serve as reference to the files apks.'
-        print '     -We go to create two directory. '
-        #
-        # if(AMOUNT_DIRECTORYS <= 0):
-        #     print "Do not to create news directory."
-        #
-        # elif(AMOUNT_DIRECTORYS > 0 and AMOUNT_DIRECTORYS < 2):
-        #     print 'Create one directory.'
-        #
-        # elif(AMOUNT_DIRECTORYS > 1):
-        #     print '     -Create two directorys.'
-
+        print '\n'
         # WORKING_DIRECTORY_6_0_N5
         WORKING             =   raw_input('         Insert name of Working Directory in your server         : ')
-        DIR1                =   raw_input('         Insert name for first directory                         : ')
-        DIR2                =   raw_input('         Insert name for second directory                        : ')
 
-        # information
-        print '\n'
-        print '         Insert your Credentials for connect to server and preload files : '
-        USER                =   raw_input('         Insert UserName                                                                 : ')
-        HOST                =   raw_input('         Insert Host                                                                     : ')
-        DIR_KEY_FILE        =   raw_input('         Insert local directory where the key.pem file is located for authentication     : ')
+        # get name of directory based on names of apks file
+        namesapk = apk_list()
+        sizename = len(namesapk)
+        for j0 in range(sizename):
+            print namesapk[j0]
 
+        # DIR1                =   raw_input('         Insert name for first directory                         : ')
+        # DIR2                =   raw_input('         Insert name for second directory                        : ')
+        #
+        # # information
+        # print '\n'
+        # print '         Insert your Credentials for connect to server and preload files : '
+        # USER                =   raw_input('         Insert UserName                                                                 : ')
+        # HOST                =   raw_input('         Insert Host                                                                     : ')
+        # DIR_KEY_FILE        =   raw_input('         Insert local directory where the key.pem file is located for authentication     : ')
+        #
+        #
+        # # building commands for create two directory
+        # command_last    = command0 + DIR1 + command8 + USER + command10 + DIR2 + command9 + WORKING + log
+        #
+        # # string add
+        # s           = '/home/'
+        # dirserver1  = '/packages/apps/'
+        # slash       = '/'
+        #
+        # # paths for load files in server
+        # dirserver   = s + USER
+        # dirserver0  = s + USER + slash
+        # dirserver2  = dirserver0 + WORKING + dirserver1 + DIR1
+        # dirserver3  = dirserver0 + WORKING + dirserver1 + DIR2
+        #
+        # # get the path of script
+        # path = path_script()
+        # # get the path of files .mk extension
+        # mkfiles     = mk_list()
+        # sizemkfiles = len(mkfiles)
+        # g = 0
+        # # get the path of files .apk extension
+        # apkfiles        = apk_list()
+        # sizeapkfiles    = len(apkfiles)
+        # f = 0
+        #
+        # """load to script file"""
+        # loadfiles    = scp + DIR_KEY_FILE + SPACE + path + SPACE + USER + charact1 + HOST + charact2 + DIR_UPLOAD + dirserver
+        # """Creating directorys"""
+        # createdirs    = sshkey + DIR_KEY_FILE + SPACE + USER + charact1 + HOST + command_last
+        # """load files .mk"""
+        # for g in range(sizemkfiles):
+        #     print mkfiles[g]
+        #     if(g == 0):
+        #         loadfirstmk1    = scp + DIR_KEY_FILE + SPACE + mkfiles[g] + SPACE + USER + charact1 + HOST + charact2 + DIR_UPLOAD + dirserver2
+        #     elif(g == 1):
+        #         loadfirstmk2    = scp + DIR_KEY_FILE + SPACE + mkfiles[g] + SPACE + USER + charact1 + HOST + charact2 + DIR_UPLOAD + dirserver3
+        # """load files .apk"""
+        # for f in range(sizeapkfiles):
+        #     if(f == 0):
+        #         loadfirstapk1   = scp + DIR_KEY_FILE + SPACE + apkfiles[f] + SPACE + USER + charact1 + HOST + charact2 + DIR_UPLOAD + dirserver2
+        #     elif(f > 0):
+        #         loadfirstapk2   = scp + DIR_KEY_FILE + SPACE + apkfiles[f] + SPACE + USER + charact1 + HOST + charact2 + DIR_UPLOAD + dirserver3
+        # print '\n'
+        # print loadfiles
+        # print createdirs
+        # print loadfirstmk1
+        # print loadfirstmk2
+        # print loadfirstapk1
+        # print loadfirstapk2
 
-        # building commands for create directory
-        command_last    = command0 + DIR1 + command8 + USER + command10 + DIR2 + command9 + WORKING + log
-
-        # string add
-        s           = '/home/'
-        dirserver1  = '/packages/apps/'
-        slash       = '/'
-
-        # paths for load files in server
-        dirserver   = s + USER
-        dirserver0  = s + USER + slash
-        dirserver2  = dirserver0 + WORKING + dirserver1 + DIR1
-        dirserver3  = dirserver0 + WORKING + dirserver1 + DIR2
-
-        # get the path of script
-        path = path_script()
-        # get the path of files .mk extension
-        mkfiles     = mk_list()
-        sizemkfiles = len(mkfiles)
-        g = 0
-        # get the path of files .apk extension
-        apkfiles        = apk_list()
-        sizeapkfiles    = len(apkfiles)
-        f = 0
-
-        """load to script file"""
-        loadfiles    = scp + DIR_KEY_FILE + SPACE + path + SPACE + USER + charact1 + HOST + charact2 + DIR_UPLOAD + dirserver
-        """Creating directorys"""
-        createdirs    = sshkey + DIR_KEY_FILE + SPACE + USER + charact1 + HOST + command_last
-        """load files .mk"""
-        for g in range(sizemkfiles):
-            print mkfiles[g]
-            if(g == 0):
-                loadfirstmk1    = scp + DIR_KEY_FILE + SPACE + mkfiles[g] + SPACE + USER + charact1 + HOST + charact2 + DIR_UPLOAD + dirserver2
-            elif(g == 1):
-                loadfirstmk2    = scp + DIR_KEY_FILE + SPACE + mkfiles[g] + SPACE + USER + charact1 + HOST + charact2 + DIR_UPLOAD + dirserver3
-        """load files .apk"""
-        for f in range(sizeapkfiles):
-            if(f == 0):
-                loadfirstapk1   = scp + DIR_KEY_FILE + SPACE + apkfiles[f] + SPACE + USER + charact1 + HOST + charact2 + DIR_UPLOAD + dirserver2
-            elif(f > 0):
-                loadfirstapk2   = scp + DIR_KEY_FILE + SPACE + apkfiles[f] + SPACE + USER + charact1 + HOST + charact2 + DIR_UPLOAD + dirserver3
-        print '\n'
-        print loadfiles
-        print createdirs
-        print loadfirstmk1
-        print loadfirstmk2
-        print loadfirstapk1
-        print loadfirstapk2
+        # ---this not-----
         # finding directories and files
         # dirfile     = getallfiles()
         # sizefile    = len(dirfile)
         # read_files_mk(dirfile,sizefile)
 
-        c = 0
-        # secuence for run commands
-        for c in range(6):
-            if (c == 0):
-                # load files in server
-                os.system(loadfiles)
-            elif (c > 0 and c < 2):
-                # create new directories
-                os.system(createdirs)
-                print 'Directory created!!'
-            elif (c > 1 and c < 3):
-                os.system(loadfirstmk1)
-                print '..ready 1'
-            elif (c > 2 and c < 4):
-                os.system(loadfirstmk2)
-                print '..ready 2'
-            elif(c > 3 and c < 5):
-                os.system(loadfirstapk1)
-                print '..ready 3'
-            elif(c > 4 and c < 6):
-                os.system(loadfirstapk2)
-                print '..ready 4'
+        # c = 0
+        # # secuence for run commands
+        # for c in range(6):
+        #     if (c == 0):
+        #         # load files in server
+        #         os.system(loadfiles)
+        #     elif (c > 0 and c < 2):
+        #         # create new directories
+        #         os.system(createdirs)
+        #         print 'Directory created!!'
+        #     elif (c > 1 and c < 3):
+        #         os.system(loadfirstmk1)
+        #         print '..ready 1'
+        #     elif (c > 2 and c < 4):
+        #         os.system(loadfirstmk2)
+        #         print '..ready 2'
+        #     elif(c > 3 and c < 5):
+        #         os.system(loadfirstapk1)
+        #         print '..ready 3'
+        #     elif(c > 4 and c < 6):
+        #         os.system(loadfirstapk2)
+        #         print '..ready 4'
 
         print 'loading successful'
 
 
     else:
-
         print '        ->       Please, choose a option!'
 
 except Exception as e:
