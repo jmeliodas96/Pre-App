@@ -57,7 +57,7 @@ try:
     (stdoutdata, stderrdata) = proc.communicate()
     out.append(stdoutdata)
     err.append(stderrdata)
-    
+
     print 'out=',out
     print 'err=',err
 
