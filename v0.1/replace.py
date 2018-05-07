@@ -11,6 +11,7 @@ print '\n'
 # Delete Python-style comments
 num =   re.sub(r'#.*$', "", phone)
 
+# .[(?O)].+[A].+[(0-9)].[(0-9)].[^(?WD)]
 name_re = re.compile('.[(?y)].+[a-z].+[(0-9)].[(0-9)].[^W]\S')
 
 # name_search = name_re.search(path)

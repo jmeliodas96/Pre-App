@@ -96,7 +96,7 @@ def getcwd():
     dir_path = os.path.dirname(os.path.realpath(__file__))
     return dir_path
 
-# get all files in subdirectories with extension .mk
+# get all files in subdirectories with extension .mk and .apk
 def getallfiles(extension):
     dirpath = getcwd()
     result = [os.path.join(dp, f) for dp, dn, filenames in os.walk(dirpath) for f in filenames if os.path.splitext(f)[1] == extension]
@@ -148,7 +148,6 @@ def get_list_files():
         sizefile    =   len(files)
         k = 0
         for k in range(sizefile):
-            # print files[k]
             content.append(files[k])
     return content
 
@@ -215,6 +214,7 @@ def get_fota_name(apk_path_list):
     return name
 
 
+
 """Try this baby :)"""
 try:
 
@@ -231,18 +231,29 @@ try:
     elif(response == 'k' or response == 'K'):
         print '     -To preload the apks we need to create news directory in the following location /packages/apps/.'
         print '\n'
-        # WORKING_DIRECTORY_6_0_N5
-        # get WORKING Directory
+
+
+        # get WORKING_DIRECTORY_6_0_N5
         WORKING             =   raw_input('         Insert name of Working Directory in your server         : ')
         # get name of directory based on names of apks file
         namesapk    = apk_list()
-        helper      = get_helper_name(namesapk)
-        # get fota name for dir
-        fota        = get_fota_name(namesapk)
+        # data for iter on namesapk and build the commands
+        nm_apk = []
+        size        = len(namesapk)
+        l           = 0
 
-        # asign name for new dir1
+        # get names for set in new directory
+        helper      = get_helper_name(namesapk)
+        fota        = get_fota_name(namesapk)
+        # giving names for news directory
         DIR1                =   helper
         DIR2                =   fota
+        # store helper and fota names in dictionary nm_apk=[]
+        for l in range(size):
+            if(l == 0):
+                nm_apk.append(helper)
+            elif(l > 0):
+                nm_apk.append(fota)
 
         # information
         print '\n'
@@ -267,13 +278,6 @@ try:
         dirserver2  = dirserver0 + WORKING + dirserver1 + DIR1
         dirserver3  = dirserver0 + WORKING + dirserver1 + DIR2
 
-        print '\n'
-        print '         The news Directory will create in your server how   : '
-        print '             First               : ',dirserver2
-        print '             Second              : ',dirserver3
-
-
-
         # get the path of script
         path = path_script()
         # get the path of files .mk extension
@@ -284,7 +288,6 @@ try:
         apkfiles        = apk_list()
         sizeapkfiles    = len(apkfiles)
         f = 0
-
 
         """load to script file"""
         loadfiles    = scp + DIR_KEY_FILE + SPACE + path + SPACE + USER + charact1 + HOST + charact2 + DIR_UPLOAD + dirserver
@@ -302,7 +305,18 @@ try:
                 loadfirstapk1   = scp + DIR_KEY_FILE + SPACE + apkfiles[f] + SPACE + USER + charact1 + HOST + charact2 + DIR_UPLOAD + dirserver2
             elif(f > 0):
                 loadfirstapk2   = scp + DIR_KEY_FILE + SPACE + apkfiles[f] + SPACE + USER + charact1 + HOST + charact2 + DIR_UPLOAD + dirserver3
-        print '\n'
+        """parse content from files .mk and replace"""
+        for l in range(size):
+            print nm_apk[l]
+
+            # ---this not-----
+            # finding directories and files
+            # dirfile     = getallfiles()
+            # sizefile    = len(dirfile)
+            # read_files_mk(dirfile,sizefile)
+
+
+        # print '\n'
         # print loadfiles
         # print createdirs
         # print loadfirstmk1
@@ -310,14 +324,9 @@ try:
         # print loadfirstapk1
         # print loadfirstapk2
 
-        # ---this not-----
-        # finding directories and files
-        # dirfile     = getallfiles()
-        # sizefile    = len(dirfile)
-        # read_files_mk(dirfile,sizefile)
 
+        """ Secuence for execute process and finish task """
         # c = 0
-        # # secuence for run commands
         # for c in range(6):
         #     if (c == 0):
         #         # load files in server
@@ -338,6 +347,15 @@ try:
         #     elif(c > 4 and c < 6):
         #         os.system(loadfirstapk2)
         #         print '..ready 4'
+
+        # interactive with user
+        print '\n'
+        print '         Your Files are located in the news directory , in your server looks how : '
+        print '             First               : ',dirserver2
+        print '             Second              : ',dirserver3
+
+
+
 
         print '         -Preloading process successful.'
         print '\n'

@@ -105,18 +105,16 @@ def main():
 
     # print mkfiles
 
-    # # just get files mk
+    # just get files mk
     # mk_content  = read_files_mk(mkfiles,sizemkfiles)
     # szmkcontent = len(mk_content)
-    new_re  =   re.compile('.[AO]\S.+[UE]\W.+[:=]\W')
-    # new_re  = re.compile(".[AO]\S.+[UE]\W.+[:=]\W+\b")
+    # new_re  =   re.compile('.[AO]\S.+[UE]\W.+[:=]\W')
+    new_re  = re.compile(".[AO]\S.+[UE]\W.+[:=]\W+")
     new_one = []
     new_two = []
     g = 0
 
     # print mk_content
-
-    # print sizemkfiles
     for g in range(sizemkfiles):
         print mkfiles[g]
         if(g == 0):
@@ -124,11 +122,13 @@ def main():
         elif(g > 0):
             second_mk = mkfiles[g]
 
-    # first android.mk
+    # first Android.mk
     content     = read_files_mk_v1(first_mk)
     size1       = len(content)
+    # second Android.mk
     content2    = read_files_mk_v1(second_mk)
     size2       = len(content2)
+
     print '\n'
     print content
 
@@ -139,38 +139,77 @@ def main():
     i = 0
     j = 0
     print '\n'
+
+    # two parameters recieved from main.py over tunnel ssh
+    # this data replace the name of LOCAL_MODULE because is the name of dir1 and dir2
+    test1   = 'System_Helper_2.3.0'
+    test2   = 'FOTA_12.0.0'
+    apk     = ''
+    pos     = []
+    # new LOCAL_MODULE, this recieved a parameter, the name of folder that containing the files for every apk file
+    LOCAL_MODULE = 'LOCAL_MODULE := '
+    LOCAL_MODULE = LOCAL_MODULE + test1
+
+
+    # reading first content
+    # file = open('Androidv1.mk','wb')
     for i in range(size1):
         print i,' : ',content[i]
         # new_mk = parse_mk(mk_content,i)
         new_search_mk = new_re.search(content[i])
         if new_search_mk:
             new_one.append(content[i])
+            pos.append(i)
+            content[i] = LOCAL_MODULE
+            apk = re.sub(new_re, LOCAL_MODULE, content[i])
+        # file.write(content[i])
+        # file.close()
+
 
     print '\n'
-    # print content
-    # print content2
 
+    # reading second content
     for j in range(size2):
         print j,' : ',content2[j]
         new_search_mk = new_re.search(content2[j])
         if new_search_mk:
             new_two.append(content2[j])
 
-    # print new_mk
-    this = 'DeviceInfo'
+    # print the content that have the pattern of regular expression
     print '\n'
     print new_one
     print new_two
+    print apk
+    print pos
+    print '\n'
+    line = '\n'
+
+    file = open('Androidv1.mk','wb')
+    for i in range(size1):
+        print i,' : ',content[i]
+        # # new_mk = parse_mk(mk_content,i)
+        # new_search_mk = new_re.search(content[i])
+        # if new_search_mk:
+        #     new_one.append(content[i])
+        #     pos.append(i)
+        #     content[i] = LOCAL_MODULE
+        #     apk = re.sub(new_re, LOCAL_MODULE, content[i])
+        file.write(content[i] + line)
+    file.close()
+
+
+
     size3 = len(new_one)
     size4 = len(new_two)
     c = 0
-    for c in range(size3):
-        print new_one[c]
-        if(new_one[c] == 'LOCAL_MODULE := facebook-puto'):
-            print 'puto find'
-            new_one[c] = this
-
-    print new_one
+    # print '\n'
+    # for c in range(size3):
+    #     print new_one[c]
+    #     if(new_one[c] == 'Lava_System_Helper_6.0.0'):
+    #         print 'puto find'
+    #         new_one[c] = this
+    #
+    # print new_one
 
 
 if __name__ == "__main__":

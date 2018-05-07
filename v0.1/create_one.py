@@ -7,6 +7,20 @@ import subprocess
 import os
 import argparse
 
+
+"""function for read every Android.mk and return content open"""
+    def read_files_mk_v1(dirfile):
+
+        f= open(dirfile,"r")
+        if (f.mode == "r"):
+            out =  f.read()
+            new_out_mk  =   get_content_mk(out)
+
+        else:
+            print 'no its read'
+        return new_out_mk
+
+
 # try this
 try:
     # constant
