@@ -306,8 +306,8 @@ try:
             elif(f > 0):
                 loadfirstapk2   = scp + DIR_KEY_FILE + SPACE + apkfiles[f] + SPACE + USER + charact1 + HOST + charact2 + DIR_UPLOAD + dirserver3
         """parse content from files .mk and replace"""
-        for l in range(size):
-            print nm_apk[l]
+        # for l in range(size):
+            # print nm_apk[l]
 
             # ---this not-----
             # finding directories and files
@@ -356,7 +356,7 @@ try:
 
 
 
-
+        print '\n'
         print '         -Preloading process successful.'
         print '\n'
 

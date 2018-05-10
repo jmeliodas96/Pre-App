@@ -6,6 +6,9 @@ import os
 import re
 import numpy
 
+# flags
+# IGNORECASE = False
+
 # get current working directorie
 def getcwd():
     dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -109,11 +112,21 @@ def main():
     # mk_content  = read_files_mk(mkfiles,sizemkfiles)
     # szmkcontent = len(mk_content)
     # new_re  =   re.compile('.[AO]\S.+[UE]\W.+[:=]\W')
-    new_re  = re.compile(".[AO]\S.+[UE]\W.+[:=]\W+")
+    # new_re  = re.compile(".[AO]\S.+[UE]\W.+[:=]\W+")
+    module_re           =   re.compile("^[A-Z].[A-Z].[A-Z].[A-Z].[A-Z].[A-Z].[ ]\B")
+    src_re              =   re.compile("^[A-Z].[A-Z].[A-Z].[A-Z].[A-Z].[A-Z].[(?-SRC)].[FILES]\W")
+    certificate_re      =   re.compile(".[A-Z].+[A-Z].[A-Z].[AO].[(?-F)]\W.+[:=]\B")
+
+    # new_re    = "\b(LOCAL_MODULE)\b.+[:=]"
+
+    # .[(?LOCAL)].+[(?E-U)].[(?:=)].
+    # [(?LACO)].+[?UE].+[:=].+[ ]
+    # [(?-LOCAL_MODULE :=)].+[^(?-a-z)]$
     new_one = []
     new_two = []
     g = 0
 
+# \bLOCAL_MODULE := [a-z].ava_System_Helper_\d.*\b
     # print mk_content
     for g in range(sizemkfiles):
         print mkfiles[g]
@@ -140,38 +153,63 @@ def main():
     j = 0
     print '\n'
 
+    """
+        note:
+                The LOCAL_MODULE := , take the name from name of the folder content apk and mk files.
+                The LOCAL_SRC_FILES :=, take the name from name of apk file.
+                The LOCAL_CERTIFICATE :=, take the name from certificate information.
+    """
+
+
     # two parameters recieved from main.py over tunnel ssh
     # this data replace the name of LOCAL_MODULE because is the name of dir1 and dir2
-    test1   = 'System_Helper_2.3.0'
+    # content[i]
+    test1   = 'DeviceInfo'
+    test3   = 'K2konnect_FOTA_7.0.8_F.apk'
+    test4   = 'platform'
+    # content2[j]
     test2   = 'FOTA_12.0.0'
     apk     = ''
     pos     = []
-    # new LOCAL_MODULE, this recieved a parameter, the name of folder that containing the files for every apk file
-    LOCAL_MODULE = 'LOCAL_MODULE := '
-    LOCAL_MODULE = LOCAL_MODULE + test1
 
+    # new LOCAL_MODULE, this recieved a parameter, the name of folder that containing the files for every apk file
+    LOCAL_MODULE        =   'LOCAL_MODULE := '
+    LOCAL_CERTIFICATE   =   'LOCAL_CERTIFICATE := '
+    LOCAL_SRC_FILES     =   'LOCAL_SRC_FILES := '
+    # Building news line in files Android.mk
+    LOCAL_MODULE        =   LOCAL_MODULE + test1
+    LOCAL_CERTIFICATE   =   LOCAL_CERTIFICATE + test4
+    LOCAL_SRC_FILES     =   LOCAL_SRC_FILES + test3
 
     # reading first content
-    # file = open('Androidv1.mk','wb')
     for i in range(size1):
         print i,' : ',content[i]
         # new_mk = parse_mk(mk_content,i)
-        new_search_mk = new_re.search(content[i])
+        new_search_mk       =   module_re.search(content[i])
+        second_search_mk    =   certificate_re.search(content[i])
+        three_search_mk     =   src_re.search(content[i])
+
         if new_search_mk:
             new_one.append(content[i])
             pos.append(i)
-            content[i] = LOCAL_MODULE
-            apk = re.sub(new_re, LOCAL_MODULE, content[i])
-        # file.write(content[i])
-        # file.close()
-
-
+            # replace in the content in this position
+            content[i]  = LOCAL_MODULE
+        elif second_search_mk:
+            # replace in the content in this position
+            new_one.append(content[i])
+            content[i]  =   LOCAL_CERTIFICATE
+            pos.append(i)
+        elif three_search_mk:
+            # replace in the content in this position
+            new_one.append(content[i])
+            content[i]  =   LOCAL_SRC_FILES
+            pos.append(i)
     print '\n'
 
     # reading second content
     for j in range(size2):
         print j,' : ',content2[j]
-        new_search_mk = new_re.search(content2[j])
+        new_search_mk   =   module_re.search(content2[j])
         if new_search_mk:
             new_two.append(content2[j])
 
@@ -179,7 +217,6 @@ def main():
     print '\n'
     print new_one
     print new_two
-    print apk
     print pos
     print '\n'
     line = '\n'
@@ -187,29 +224,8 @@ def main():
     file = open('Androidv1.mk','wb')
     for i in range(size1):
         print i,' : ',content[i]
-        # # new_mk = parse_mk(mk_content,i)
-        # new_search_mk = new_re.search(content[i])
-        # if new_search_mk:
-        #     new_one.append(content[i])
-        #     pos.append(i)
-        #     content[i] = LOCAL_MODULE
-        #     apk = re.sub(new_re, LOCAL_MODULE, content[i])
         file.write(content[i] + line)
     file.close()
-
-
-
-    size3 = len(new_one)
-    size4 = len(new_two)
-    c = 0
-    # print '\n'
-    # for c in range(size3):
-    #     print new_one[c]
-    #     if(new_one[c] == 'Lava_System_Helper_6.0.0'):
-    #         print 'puto find'
-    #         new_one[c] = this
-    #
-    # print new_one
 
 
 if __name__ == "__main__":

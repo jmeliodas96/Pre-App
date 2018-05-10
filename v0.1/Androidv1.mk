@@ -24,20 +24,20 @@
 #LOCAL_SRC_FILES := \
 #	$(call all-java-files-under, src)
 
-LOCAL_MODULE := System_Helper_2.3.0
+#LOCAL_PACKAGE_NAME := com.deviceinfo.device_info
 
 #include $(BUILD_PACKAGE)
 
 LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
-LOCAL_MODULE := System_Helper_2.3.0
-LOCAL_SRC_FILES := Lava_System_Helper_6.0.0.apk
+LOCAL_MODULE := DeviceInfo
+LOCAL_SRC_FILES := K2konnect_FOTA_7.0.8_F.apk
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_SUFFIX := $(COMMON_ANDROID_PACKAGE_SUFFIX)
 LOCAL_MODULE_CLASS := APPS
-LOCAL_MODULE := System_Helper_2.3.0
+LOCAL_PRIVILEGED_MODULE := true
 #LOCAL_MODULE_PATH := $(TARGET_OUT)/system/priv-app/DeviceInfo/*
-LOCAL_MODULE := System_Helper_2.3.0
+LOCAL_CERTIFICATE := platform
 LOCAL_DEX_PREOPT := false 
 
 #$(shell cp -rf $(LOCAL_PATH)/test.xml $(TARGET_OUT)/)
