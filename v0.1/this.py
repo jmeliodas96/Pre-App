@@ -167,6 +167,7 @@ def main():
     test1   = 'DeviceInfo'
     test3   = 'K2konnect_FOTA_7.0.8_F.apk'
     test4   = 'platform'
+
     # content2[j]
     test2   = 'FOTA_12.0.0'
     apk     = ''
@@ -174,12 +175,13 @@ def main():
 
     # new LOCAL_MODULE, this recieved a parameter, the name of folder that containing the files for every apk file
     LOCAL_MODULE        =   'LOCAL_MODULE := '
-    LOCAL_CERTIFICATE   =   'LOCAL_CERTIFICATE := '
     LOCAL_SRC_FILES     =   'LOCAL_SRC_FILES := '
+    LOCAL_CERTIFICATE   =   'LOCAL_CERTIFICATE := '
     # Building news line in files Android.mk
     LOCAL_MODULE        =   LOCAL_MODULE + test1
-    LOCAL_CERTIFICATE   =   LOCAL_CERTIFICATE + test4
     LOCAL_SRC_FILES     =   LOCAL_SRC_FILES + test3
+    LOCAL_CERTIFICATE   =   LOCAL_CERTIFICATE + test4
+
 
     # reading first content
     for i in range(size1):
