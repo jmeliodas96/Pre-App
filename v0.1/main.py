@@ -251,13 +251,13 @@ def show_information_changes(pos, content_one):
                 first.append(fst)
     return first
 
-def send_content(dirserver2, dirserver3, mkfiles, sizemkfiles, DIR1, DIR2):
-    show     =   ParseAndroidsmk(mkfiles, sizemkfiles, DIR1, DIR2)
+def send_content(dirserver2, dirserver3, mkfiles, sizemkfiles, fota, helper):
+    show     =   ParseAndroidsmk(mkfiles, sizemkfiles, fota, helper)
     sizeshow = len(show)
     print '\n'
     print '         Your files will located in a new directory, into your server look like : '
-    print '             First               :   ',dirserver2
-    print '             Second              :   ',dirserver3
+    print '             Second               :   ',dirserver2
+    print '             First                :   ',dirserver3
     print '\n'
     print '         The changes in files Android.mk it was  : '
 
@@ -271,11 +271,10 @@ def send_content(dirserver2, dirserver3, mkfiles, sizemkfiles, DIR1, DIR2):
                 if(j == 0):
                     si = str(show[j])
                     size = len(si)
-                    for line in si.split('['):
+                    for line in si.split(','):
                         print '                                     in line',line
-                        for line in si.split(']'):
-                            print '                                     in line',line
-        elif(g > 0):
+        elif (g > 0):
+            print '\n'
             print '         For Second Android.mk file located in your local system      :  '
             for j in range(0, sizeshow):
                 if(j > 0):
@@ -287,7 +286,8 @@ def send_content(dirserver2, dirserver3, mkfiles, sizemkfiles, DIR1, DIR2):
 
 """Function ParseAndroidsmk(), this get the path of files Android.mk and open for read and parse line by line for iter over content
     and found a expression regular conditional, if its true this replace the content for information about every apk file"""
-def ParseAndroidsmk(mkfiles, sizemkfiles, DIR1, DIR2):
+# def ParseAndroidsmk(mkfiles, sizemkfiles, DIR1, DIR2):
+def ParseAndroidsmk(mkfiles, sizemkfiles, fota, helper):
     """
         note:
                 The LOCAL_MODULE := , take the name from name of the folder content apk and mk files.
@@ -324,24 +324,42 @@ def ParseAndroidsmk(mkfiles, sizemkfiles, DIR1, DIR2):
     content_two =   read(second_mk)
     size2       =   len(content_two)
 
+    # array of certificates
+    certificate = ['platform','PRESIGNED']
+
     # content[i]
-    test1   = DIR1
+    test1   = fota
     # test3   = 'K2konnect_FOTA_7.0.8_F.apk'
-    # test4   = 'platform'
 
     # content2[j]
-    # test2   = DIR2
-
-    # certificate = []
+    test2   = helper
+    # test4   = 'K2konnect_FOTA_7.0.8_F.apk'
 
     # new LOCAL_MODULE, this recieved a parameter, the name of folder that containing the files for every apk file
     LOCAL_MODULE        =   'LOCAL_MODULE := '
-    LOCAL_SRC_FILES     =   'LOCAL_SRC_FILES := '
-    # LOCAL_CERTIFICATE   =   'LOCAL_CERTIFICATE := '
+    # LOCAL_SRC_FILES     =   'LOCAL_SRC_FILES := '
+    LOCAL_CERTIFICATE   =   'LOCAL_CERTIFICATE := '
+    
     # Building news line in files Android.mk
-    LOCAL_MODULE        =   LOCAL_MODULE + test1
-    # LOCAL_SRC_FILES     =   LOCAL_SRC_FILES + test3
-    # LOCAL_CERTIFICATE   =   LOCAL_CERTIFICATE + test4
+    for t in range(0, len(certificate)):
+        if (t == 0):
+            LOCAL_CERTIFICATE   =   LOCAL_CERTIFICATE + certificate[0]
+            fota_certificate = LOCAL_CERTIFICATE
+            LOCAL_MODULE        =   LOCAL_MODULE + test1
+            module_fota         =   LOCAL_MODULE
+
+        elif (t > 0):
+            LOCAL_CERTIFICATE   =   LOCAL_CERTIFICATE + certificate[1]
+            helper_certificate  =   LOCAL_CERTIFICATE
+            LOCAL_MODULE        =   LOCAL_MODULE + test2
+            module_helper       =   LOCAL_MODULE
+
+
+        # reset
+        LOCAL_CERTIFICATE   =   'LOCAL_CERTIFICATE := '
+        LOCAL_MODULE        =   'LOCAL_MODULE := '
+
+
 
     # reading first content
     for i in range(size1):
@@ -352,9 +370,9 @@ def ParseAndroidsmk(mkfiles, sizemkfiles, DIR1, DIR2):
         if new_search_mk:
             pos.append(i)
             # replace in the content in this position
-            content_one[i]  = LOCAL_MODULE
+            content_one[i]  = module_fota
         elif second_search_mk:
-            # content_one[i]  =   LOCAL_CERTIFICATE
+            content_one[i]  =   fota_certificate
             pos.append(i)
         elif three_search_mk:
             # content_one[i]  =   LOCAL_SRC_FILES
@@ -368,10 +386,10 @@ def ParseAndroidsmk(mkfiles, sizemkfiles, DIR1, DIR2):
 
         if new_search_mk:
             pos2.append(j)
-            # content_two[j]  =   LOCAL_SRC_FILES
+            content_two[j]  =   module_helper
         elif second_search_mk:
             pos2.append(j)
-            # content_two[j]  =   LOCAL_SRC_FILES
+            content_two[j]  =   helper_certificate
         elif three_search_mk:
             pos2.append(j)
             # content_two[j]  =   LOCAL_SRC_FILES
@@ -381,11 +399,19 @@ def ParseAndroidsmk(mkfiles, sizemkfiles, DIR1, DIR2):
     first_content   =   show_information_changes(pos, content_one)
     second_content  =   show_information_changes(pos2, content_two)
 
-    # here, hold new content to rewrite, mkfiles
-    file = open('fota/Androidv1.mk','wb')
-    for i in range(size1):
-        file.write(content_one[i] + line)
-    file.close()
+    for u in range(0, len(mkfiles)):
+        if( u == 0):
+            # here, hold new content to rewrite, mkfiles
+            file = open(mkfiles[u],'wb')
+            for i in range(size1):
+                file.write(content_two[i] + line)
+            file.close()
+        elif ( u > 0):
+            # here, hold new content to rewrite, mkfiles
+            file = open(mkfiles[u],'wb')
+            for j in range(size2):
+                file.write(content_one[j] + line)
+            file.close()
 
     # supremo array
     father_array = []
@@ -440,8 +466,6 @@ def main():
                 elif(l > 0):
                     nm_apk.append(fota)
 
-            print nm_apk
-
             # information
             print '\n'
             print '         Insert your Credentials for connect to server and preload files : '
@@ -477,9 +501,9 @@ def main():
             apkfiles        = apk_list()
             sizeapkfiles    = len(apkfiles)
             f = 0
-
+            certificate = ['platform','PRESIGNED']
             # parse data in files mk and replace the parameters and return an array of position for show to the user...
-            content    =   send_content(dirserver2, dirserver3, mkfiles, sizemkfiles, DIR1, DIR2)
+            content    =   send_content(dirserver2, dirserver3, mkfiles, sizemkfiles, fota, helper)
 
             """load to script file"""
             loadfiles    = scp + DIR_KEY_FILE + SPACE + path + SPACE + USER + charact1 + HOST + charact2 + DIR_UPLOAD + dirserver
