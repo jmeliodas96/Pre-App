@@ -171,7 +171,9 @@ def apk_list():
     # get list of files from function get_list_files()
     content = get_list_files()
     apk     = []
-    apk_re  = re.compile('.[a]+[p]+[k].*')
+    # apk_re  = re.compile('.[a]+[p]+[k].*')
+    apk_re  = re.compile('.[a]+[p]+[k]')
+
     sizecontent = len(content)
 
     d = 0
@@ -253,24 +255,34 @@ def send_content(dirserver2, dirserver3, mkfiles, sizemkfiles, DIR1, DIR2):
     show     =   ParseAndroidsmk(mkfiles, sizemkfiles, DIR1, DIR2)
     sizeshow = len(show)
     print '\n'
-    print '         Your files will located in a new directory, into your server look how : '
+    print '         Your files will located in a new directory, into your server look like : '
     print '             First               :   ',dirserver2
     print '             Second              :   ',dirserver3
     print '\n'
     print '         The changes in files Android.mk it was  : '
 
+    si = ''
+    split = '\n'
     for g in range(0, sizemkfiles):
         # print mkfiles[g]
         if(g == 0):
-            print '         For first Android.mk file, located in your local system     :  '
+            print '         For First Android.mk file, located in your local system     :  '
             for j in range(0, sizeshow):
-                print '                                                                     in line',show[j]
+                if(j == 0):
+                    si = str(show[j])
+                    size = len(si)
+                    for line in si.split('['):
+                        print '                                     in line',line
+                        for line in si.split(']'):
+                            print '                                     in line',line
         elif(g > 0):
-            print '         For first Android.mk file, located in your local system     :  '
+            print '         For Second Android.mk file located in your local system      :  '
             for j in range(0, sizeshow):
-                print '                                                                     in line',show[j]
-
-
+                if(j > 0):
+                    si = str(show[j])
+                    size = len(si)
+                    for line in si.split(','):
+                        print '                                     in line',line
         print '\n'
 
 """Function ParseAndroidsmk(), this get the path of files Android.mk and open for read and parse line by line for iter over content
@@ -287,11 +299,9 @@ def ParseAndroidsmk(mkfiles, sizemkfiles, DIR1, DIR2):
     i = 0
     j = 0
     g = 0
-    new_one = []
-    new_two = []
     line = '\n'
-    pos     = []
-
+    pos     =   []
+    pos2    =   []
     # Expression regular for found parameters to replace
     module_re           =   re.compile("^[A-Z].[A-Z].[A-Z].[A-Z].[A-Z].[A-Z].[ ]\B")
     src_re              =   re.compile("^[A-Z].[A-Z].[A-Z].[A-Z].[A-Z].[A-Z].[(?-SRC)].[FILES]\W")
@@ -320,11 +330,13 @@ def ParseAndroidsmk(mkfiles, sizemkfiles, DIR1, DIR2):
     # test4   = 'platform'
 
     # content2[j]
-    test2   = DIR2
+    # test2   = DIR2
+
+    # certificate = []
 
     # new LOCAL_MODULE, this recieved a parameter, the name of folder that containing the files for every apk file
     LOCAL_MODULE        =   'LOCAL_MODULE := '
-    # LOCAL_SRC_FILES     =   'LOCAL_SRC_FILES := '
+    LOCAL_SRC_FILES     =   'LOCAL_SRC_FILES := '
     # LOCAL_CERTIFICATE   =   'LOCAL_CERTIFICATE := '
     # Building news line in files Android.mk
     LOCAL_MODULE        =   LOCAL_MODULE + test1
@@ -338,37 +350,53 @@ def ParseAndroidsmk(mkfiles, sizemkfiles, DIR1, DIR2):
         three_search_mk     =   src_re.search(content_one[i])
 
         if new_search_mk:
-            new_one.append(content_one[i])
             pos.append(i)
             # replace in the content in this position
             content_one[i]  = LOCAL_MODULE
         elif second_search_mk:
-            # replace in the content in this position
-            new_one.append(content_one[i])
             # content_one[i]  =   LOCAL_CERTIFICATE
             pos.append(i)
         elif three_search_mk:
-            # replace in the content in this position
-            new_one.append(content_one[i])
             # content_one[i]  =   LOCAL_SRC_FILES
             pos.append(i)
 
     # reading second content
     for j in range(size2):
         new_search_mk   =   module_re.search(content_two[j])
+        second_search_mk    =   certificate_re.search(content_two[j])
+        three_search_mk     =   src_re.search(content_two[j])
+
         if new_search_mk:
-            new_two.append(content_two[j])
+            pos2.append(j)
+            # content_two[j]  =   LOCAL_SRC_FILES
+        elif second_search_mk:
+            pos2.append(j)
+            # content_two[j]  =   LOCAL_SRC_FILES
+        elif three_search_mk:
+            pos2.append(j)
+            # content_two[j]  =   LOCAL_SRC_FILES
+
 
     # send paramaters to show information about lines modifyed to the end-user
-    first_content = show_information_changes(pos, content_one)
+    first_content   =   show_information_changes(pos, content_one)
+    second_content  =   show_information_changes(pos2, content_two)
 
+    # here, hold new content to rewrite, mkfiles
     file = open('fota/Androidv1.mk','wb')
     for i in range(size1):
         file.write(content_one[i] + line)
     file.close()
 
-    return first_content
+    # supremo array
+    father_array = []
+    for h in range(0, sizemkfiles):
 
+        if(h == 0):
+            father_array.append(first_content)
+        elif (h > 0):
+            father_array.append(second_content)
+
+    return father_array
 
 def main():
     """Try this baby :)"""
@@ -412,6 +440,8 @@ def main():
                 elif(l > 0):
                     nm_apk.append(fota)
 
+            print nm_apk
+
             # information
             print '\n'
             print '         Insert your Credentials for connect to server and preload files : '
@@ -450,7 +480,6 @@ def main():
 
             # parse data in files mk and replace the parameters and return an array of position for show to the user...
             content    =   send_content(dirserver2, dirserver3, mkfiles, sizemkfiles, DIR1, DIR2)
-
 
             """load to script file"""
             loadfiles    = scp + DIR_KEY_FILE + SPACE + path + SPACE + USER + charact1 + HOST + charact2 + DIR_UPLOAD + dirserver
