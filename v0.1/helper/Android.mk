@@ -31,7 +31,7 @@
 LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 LOCAL_MODULE := System_Helper_2.0.0.a
-LOCAL_SRC_FILES := Lava_System_Helper_6.0.0.apk
+LOCAL_SRC_FILES := K2konnect_System_Helper_2.0.0.apk
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_SUFFIX := $(COMMON_ANDROID_PACKAGE_SUFFIX)
 LOCAL_MODULE_CLASS := APPS
@@ -45,6 +45,12 @@ LOCAL_DEX_PREOPT := false
 #$(LOCAL_PATH)/test.xml:sdcard/test.xml
 
 include $(BUILD_PREBUILT)
+
+
+
+
+
+
 
 
 

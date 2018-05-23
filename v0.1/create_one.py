@@ -50,13 +50,13 @@ try:
 
     # for cmd in cmd_list, iter on cmd_list for execute every commands
     for cmd in cmd_list:
-    args = cmd.split()
-    proc = subprocess.Popen(args,
+        args = cmd.split()
+        proc = subprocess.Popen(args,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
-    (stdoutdata, stderrdata) = proc.communicate()
-    out.append(stdoutdata)
-    err.append(stderrdata)
+        (stdoutdata, stderrdata) = proc.communicate()
+        out.append(stdoutdata)
+        err.append(stderrdata)
 
     print 'out=',out
     print 'err=',err

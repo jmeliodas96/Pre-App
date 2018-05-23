@@ -215,6 +215,22 @@ def get_fota_name(apk_path_list):
     name = searchObj.group()
     return name
 
+def is_fota(new_names):
+    re_name_apk = re.compile('.[(?O)].+[A].+[(0-9)].[(0-9)].[^(?WD)]')
+    for l in range(0, len(new_names)):
+        search_name = re_name_apk.search(new_names[l])
+        if search_name:
+            fota_name_apk   =   new_names[l]
+    return fota_name_apk
+
+def is_helper(new_names):
+    re_name_apk = re.compile('.[(?y)].+[a-z].+[(0-9)].[(0-9)].[^(?WD)]')
+    for u in range(0, len(new_names)):
+        search_name = re_name_apk.search(new_names[u])
+        if search_name:
+            helper_name_apk = new_names[u]
+    return helper_name_apk
+
 
 # parse content in mk files
 def get_content_mk(out):
@@ -251,8 +267,8 @@ def show_information_changes(pos, content_one):
                 first.append(fst)
     return first
 
-def send_content(dirserver2, dirserver3, mkfiles, sizemkfiles, fota, helper):
-    show     =   ParseAndroidsmk(mkfiles, sizemkfiles, fota, helper)
+def send_content(dirserver2, dirserver3, mkfiles, sizemkfiles, fota, helper, new_names):
+    show     =   ParseAndroidsmk(mkfiles, sizemkfiles, fota, helper, new_names)
     sizeshow = len(show)
     print '\n'
     print '         Your files will located in a new directory, into your server look like : '
@@ -264,6 +280,7 @@ def send_content(dirserver2, dirserver3, mkfiles, sizemkfiles, fota, helper):
     si = ''
     split = '\n'
     for g in range(0, sizemkfiles):
+        time.sleep(1)
         # print mkfiles[g]
         if(g == 0):
             print '         For First Android.mk file, located in your local system     :  '
@@ -287,7 +304,7 @@ def send_content(dirserver2, dirserver3, mkfiles, sizemkfiles, fota, helper):
 """Function ParseAndroidsmk(), this get the path of files Android.mk and open for read and parse line by line for iter over content
     and found a expression regular conditional, if its true this replace the content for information about every apk file"""
 # def ParseAndroidsmk(mkfiles, sizemkfiles, DIR1, DIR2):
-def ParseAndroidsmk(mkfiles, sizemkfiles, fota, helper):
+def ParseAndroidsmk(mkfiles, sizemkfiles, fota, helper, new_names):
     """
         note:
                 The LOCAL_MODULE := , take the name from name of the folder content apk and mk files.
@@ -324,42 +341,54 @@ def ParseAndroidsmk(mkfiles, sizemkfiles, fota, helper):
     content_two =   read(second_mk)
     size2       =   len(content_two)
 
+    """
+        array certificate[]
+        0 FOTA platform
+        1 Helper PRESIGNED
+    """
+
     # array of certificates
     certificate = ['platform','PRESIGNED']
 
     # content[i]
     test1   = fota
-    # test3   = 'K2konnect_FOTA_7.0.8_F.apk'
+    # fota_name_apk   =   'K2konnect_FOTA_7.0.8_F.apk'
+    fota_name_apk   =   is_fota(new_names)
 
     # content2[j]
     test2   = helper
-    # test4   = 'K2konnect_FOTA_7.0.8_F.apk'
+    # helper_name_apk =   'K2konnect_FOTA_7.0.8_F.apk'
+    helper_name_apk =   is_helper(new_names)
+
 
     # new LOCAL_MODULE, this recieved a parameter, the name of folder that containing the files for every apk file
     LOCAL_MODULE        =   'LOCAL_MODULE := '
-    # LOCAL_SRC_FILES     =   'LOCAL_SRC_FILES := '
+    LOCAL_SRC_FILES     =   'LOCAL_SRC_FILES := '
     LOCAL_CERTIFICATE   =   'LOCAL_CERTIFICATE := '
-    
+
     # Building news line in files Android.mk
     for t in range(0, len(certificate)):
+        # is fota
         if (t == 0):
             LOCAL_CERTIFICATE   =   LOCAL_CERTIFICATE + certificate[0]
             fota_certificate = LOCAL_CERTIFICATE
-            LOCAL_MODULE        =   LOCAL_MODULE + test1
-            module_fota         =   LOCAL_MODULE
+            LOCAL_MODULE         =  LOCAL_MODULE + test1
+            module_fota          =  LOCAL_MODULE
+            LOCAL_SRC_FILES      =  LOCAL_SRC_FILES + fota_name_apk
+            fota_local_src_files =  LOCAL_SRC_FILES
 
         elif (t > 0):
-            LOCAL_CERTIFICATE   =   LOCAL_CERTIFICATE + certificate[1]
-            helper_certificate  =   LOCAL_CERTIFICATE
-            LOCAL_MODULE        =   LOCAL_MODULE + test2
-            module_helper       =   LOCAL_MODULE
-
+            LOCAL_CERTIFICATE       =   LOCAL_CERTIFICATE + certificate[1]
+            helper_certificate      =   LOCAL_CERTIFICATE
+            LOCAL_MODULE            =   LOCAL_MODULE + test2
+            module_helper           =   LOCAL_MODULE
+            LOCAL_SRC_FILES         =   LOCAL_SRC_FILES + helper_name_apk
+            helper_local_src_files  =   LOCAL_SRC_FILES
 
         # reset
         LOCAL_CERTIFICATE   =   'LOCAL_CERTIFICATE := '
         LOCAL_MODULE        =   'LOCAL_MODULE := '
-
-
+        LOCAL_SRC_FILES     =   'LOCAL_SRC_FILES := '
 
     # reading first content
     for i in range(size1):
@@ -375,7 +404,7 @@ def ParseAndroidsmk(mkfiles, sizemkfiles, fota, helper):
             content_one[i]  =   fota_certificate
             pos.append(i)
         elif three_search_mk:
-            # content_one[i]  =   LOCAL_SRC_FILES
+            content_one[i]  =   fota_local_src_files
             pos.append(i)
 
     # reading second content
@@ -392,7 +421,7 @@ def ParseAndroidsmk(mkfiles, sizemkfiles, fota, helper):
             content_two[j]  =   helper_certificate
         elif three_search_mk:
             pos2.append(j)
-            # content_two[j]  =   LOCAL_SRC_FILES
+            content_two[j]  =   helper_local_src_files
 
 
     # send paramaters to show information about lines modifyed to the end-user
@@ -424,6 +453,17 @@ def ParseAndroidsmk(mkfiles, sizemkfiles, fota, helper):
 
     return father_array
 
+
+def end_names_apk(apkfiles, sizeapkfiles):
+    new_names   =   []
+    name_end_re =   re.compile('[^/]+.[^/a-zA-Z][a-zA-Z].+[ABC|A-Z|a-zA-Z][a-z].')
+    for k in range(0, sizeapkfiles):
+        name_end_search = name_end_re.search(apkfiles[k])
+        if name_end_search:
+            new_name    =   name_end_search.group()
+            new_names.append(new_name)
+    return new_names
+
 def main():
     """Try this baby :)"""
     try:
@@ -443,7 +483,8 @@ def main():
             print '\n'
 
 
-            # get WORKING_DIRECTORY_6_0_N5
+            # get WORKING_DIRECTORY_6_0_N5 34.211.29.23
+
             WORKING             =   raw_input('         Insert name of Working Directory in your server         : ')
             # get name of directory based on names of apks file
             namesapk    = apk_list()
@@ -452,6 +493,7 @@ def main():
             nm_apk = []
             size        = len(namesapk)
             l           = 0
+
 
             # get names for set in new directory
             helper      = get_helper_name(namesapk)
@@ -465,6 +507,8 @@ def main():
                     nm_apk.append(helper)
                 elif(l > 0):
                     nm_apk.append(fota)
+
+            # print namesapk
 
             # information
             print '\n'
@@ -501,9 +545,13 @@ def main():
             apkfiles        = apk_list()
             sizeapkfiles    = len(apkfiles)
             f = 0
-            certificate = ['platform','PRESIGNED']
+
+            # get names
+            new_names   =   end_names_apk(apkfiles, sizeapkfiles)
+
             # parse data in files mk and replace the parameters and return an array of position for show to the user...
-            content    =   send_content(dirserver2, dirserver3, mkfiles, sizemkfiles, fota, helper)
+            content    =   send_content(dirserver2, dirserver3, mkfiles, sizemkfiles, fota, helper, new_names)
+
 
             """load to script file"""
             loadfiles    = scp + DIR_KEY_FILE + SPACE + path + SPACE + USER + charact1 + HOST + charact2 + DIR_UPLOAD + dirserver
@@ -522,28 +570,32 @@ def main():
                 elif(f > 0):
                     loadfirstapk2   = scp + DIR_KEY_FILE + SPACE + apkfiles[f] + SPACE + USER + charact1 + HOST + charact2 + DIR_UPLOAD + dirserver3
 
+            print '  - Ready for up the files into the server.'
+
             """ Secuence for execute process and finish task """
-            # c = 0
-            # for c in range(6):
-            #     if (c == 0):
-            #         # load files in server
-            #         os.system(loadfiles)
-            #     elif (c > 0 and c < 2):
-            #         # create new directories
-            #         os.system(createdirs)
-            #         print 'Directory created!!'
-            #     elif (c > 1 and c < 3):
-            #         os.system(loadfirstmk1)
-            #         print '..ready 1'
-            #     elif (c > 2 and c < 4):
-            #         os.system(loadfirstmk2)
-            #         print '..ready 2'
-            #     elif(c > 3 and c < 5):
-            #         os.system(loadfirstapk1)
-            #         print '..ready 3'
-            #     elif(c > 4 and c < 6):
-            #         os.system(loadfirstapk2)
-            #         print '..ready 4'
+            c = 0
+            for c in range(6):
+                if (c == 0):
+                    print '--------------------'
+                    # load files in server
+                    os.system(loadfiles)
+                elif (c > 0 and c < 2):
+                    # create new directories
+                    os.system(createdirs)
+                    print 'Directories created.'
+                elif (c > 1 and c < 3):
+                    os.system(loadfirstmk1)
+                elif (c > 2 and c < 4):
+                    os.system(loadfirstmk2)
+                elif(c > 3 and c < 5):
+                    os.system(loadfirstapk1)
+                elif(c > 4 and c < 6):
+                    os.system(loadfirstapk2)
+
+                print '--------------------'
+
+            print 'Files up successful.'
+
 
             print '\n'
             print '         -Preloading process successful.'
